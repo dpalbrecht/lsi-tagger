@@ -11,6 +11,7 @@ def _tqdm(documents, display_progress=True):
     else:
         return documents
 
+# TODO: Add optional n-grams that use the n-gram as one token as well as the unigrams that compose it
 class TextCleaner:
     def __init__(self, word_count_min=0, word_length_min=2):
         self.remove_punctuation_rule = re.compile(f"[{re.escape(string.punctuation)}]")
