@@ -10,15 +10,16 @@ class TagExtractor:
     def __init__(self, 
                  word_count_min=2, 
                  word_length_min=2, 
-                 num_lsi_topics=300):
+                 num_lsi_topics=300,
+                 bigram_kwargs={}):
         self.word_count_min = word_count_min
         self.word_length_min = word_length_min
         self.num_lsi_topics = num_lsi_topics
+        self.bigram_kwargs = bigram_kwargs
         
     def save(self, fname=None):
         with open('TagExtractor.p' if fname is None else fname, 'wb') as f:
-            self.__dict__['tc_word_counts'] = dict(self.__dict__['tc'].word_counts)
-            pickle.dump({k:v for k,v in self.__dict__.items() if k!='tc'}, f)
+            pickle.dump(self.__dict__, f)
     
     def load(self, fname=None):
         self.__dict__.update(
@@ -26,17 +27,12 @@ class TagExtractor:
                 open('TagExtractor.p' if fname is None else fname, 'rb').read()
             )
         )
-        tc = TextCleaner(
-            word_count_min = self.__dict__['word_count_min'],
-            word_length_min = self.__dict__['word_length_min']
-        )
-        tc.word_counts = self.__dict__['tc_word_counts']
-        self.__dict__['tc'] = tc
     
     def fit(self, documents):
         # Clean text
         self.tc = TextCleaner(word_count_min=self.word_count_min, 
-                              word_length_min=self.word_length_min)
+                              word_length_min=self.word_length_min,
+                              bigram_kwargs=self.bigram_kwargs)
         cleaned_documents = self.tc.fit_transform(documents)
             
         # Create document lookup
