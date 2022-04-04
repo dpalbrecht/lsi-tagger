@@ -6,6 +6,8 @@ import pickle
 from .text_cleaner import TextCleaner
 
 
+# TODO: Add timeit decorator here also. Add tqdm? Switch from print statements to logging
+# TODO: Add tests
 class TagExtractor:
     def __init__(self, 
                  word_count_min=2, 
@@ -40,13 +42,12 @@ class TagExtractor:
         self.doc2ind = {}
         for n, (doc, cleaned_doc) in enumerate(zip(documents, cleaned_documents)):
             if len(cleaned_doc)==0:
-                import pdb; pdb.set_trace()
                 self.problem_docs.append(doc)
             self.doc2ind[doc] = n
                 
         # Warn for empty documents
         if len(self.problem_docs) > 0:
-            print("""Warning: Some documents yield no clean tokens. These documents won't have tags. Check self.problem_docs for more detail.""")
+            print("Warning: Some documents yield no clean tokens. These documents won't have tags. Check self.problem_docs for more detail.")
         
         # Train TF-IDF
         self.dictionary = corpora.Dictionary(cleaned_documents)
