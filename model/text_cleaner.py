@@ -31,7 +31,7 @@ def get_bigrams(tokens, bigram_freq_min=20, pmi_min_value=1):
     # Calculate PMI
     bigrams_df = pd.DataFrame(list(bigram_finder.score_ngrams(nltk.collocations.BigramAssocMeasures().pmi)), 
                             columns=['bigram','PMI']).sort_values(by='PMI', ascending=False)
-    bigrams_df = bigrams_df[bigrams_df['PMI'] > 1]
+    bigrams_df = bigrams_df[bigrams_df['PMI'] > pmi_min_value]
 
     # Filter bigrams based on POS
     bigrams_df = bigrams_df[bigrams_df['bigram'].apply(lambda x: pos_filter(x))]
