@@ -3,10 +3,23 @@ import string
 from gensim.parsing.preprocessing import STOPWORDS
 from collections import defaultdict
 import itertools
-from datetime import datetime
+from tqdm import tqdm
 import nltk
 nltk.download('averaged_perceptron_tagger')
+import logging
+logger = logging.getLogger()
+logging.basicConfig(
+    format='%(asctime)s %(levelname)-8s %(message)s',
+    level=logging.INFO,
+    datefmt='%Y-%m-%d %H:%M:%S'
+)
 
+
+def _tqdm(iterator, display, desc=None):
+    if display:
+        return tqdm(iterator, position=0, 
+                    leave=True, desc=desc)
+    return iterator
 
 class TextCleaner:
     def __init__(self, word_count_min=1, word_length_min=2, bigram_kwargs={}):
@@ -21,18 +34,6 @@ class TextCleaner:
                           'himself','his','hers','kg','km','cm','thick','thin','under',
                           'you','your','yours']
         self.STOPWORDS = keep_stopwords = [s for s in STOPWORDS if s not in keep_stopwords]
-        
-    def timeit(func):
-        def wrapper(*args):
-            if args[2]:
-                start = datetime.utcnow()
-                process_name = func.__name__.lstrip('_').replace('_',' ').title()
-                print(f"Starting the '{process_name}' process...")
-            result = func(*args)
-            if args[2]:
-                print(f'Took {(datetime.utcnow() - start).total_seconds()/60:.2f} minutes.')
-            return result
-        return wrapper
         
     def _pos_filter(self, ngram):
         if ('-pron-' in ngram) or ('t' in ngram):
@@ -62,12 +63,12 @@ class TextCleaner:
         self.bigrams_dict = {b[0]:f'{b[0][0]} {b[0][1]}' for b in self.bigrams_dict 
                              if ((b[1]>1) and self._pos_filter(b[0]))}
         
-    @timeit
     def _get_bigrams(self, tokens, fit):
         if fit:
             self._create_bigrams_dict(list(itertools.chain(*tokens)))
         bigram_documents = []
-        for bigrams in (list(zip(words[:-1], words[1:])) for words in tokens):
+        for bigrams in _tqdm((list(zip(words[:-1], words[1:])) for words in tokens), 
+                             display=fit, desc='Making bigrams'):
             temp_bigrams = []
             for bigram in bigrams:
                 keep_bigram = self.bigrams_dict.get(bigram)
@@ -78,19 +79,17 @@ class TextCleaner:
             bigram_documents.append(temp_bigrams)
         return bigram_documents
     
-    @timeit
     def _preprocess_text(self, documents, fit):
         tokens = []
-        for text in documents:
+        for text in _tqdm(documents, display=fit, desc='Preprocessing text'):
             text = self.remove_punctuation_rule.sub(' ', text)
             text = re.sub(' +', ' ', text)
             tokens.append(text.strip().lower().split())
         return tokens
 
-    @timeit
     def _clean_tokens(self, documents, fit):
         cleaned_tokens = []
-        for tokens in documents:
+        for tokens in _tqdm(documents, display=fit, desc='Filtering tokens'):
             temp_tokens = []
             for word in tokens:
                 if (word not in self.STOPWORDS) & (len(word) >= self.word_length_min):
@@ -100,10 +99,9 @@ class TextCleaner:
             cleaned_tokens.append(temp_tokens)
         return cleaned_tokens
     
-    @timeit
     def _filter_word_count(self, cleaned_tokens, fit):
         return [[word for word in ct if (self.word_counts.get(word, 0) > self.word_count_min)] 
-                for ct in cleaned_tokens]
+                for ct in _tqdm(cleaned_tokens, display=fit, desc='Filtering by word count')]
 
     def _clean_documents(self, documents, fit):
         documents = self._preprocess_text(documents, fit)
@@ -117,10 +115,8 @@ class TextCleaner:
             return self._filter_word_count(cleaned_tokens, fit)
         
     def fit_transform(self, documents):
-        print("Starting the 'Text Cleaner' process...")
         cleaned_tokens = self._clean_documents(documents, True)
         self.word_counts = dict(self.word_counts)
-        print('Done!')
         return cleaned_tokens
     
     def transform(self, documents):
