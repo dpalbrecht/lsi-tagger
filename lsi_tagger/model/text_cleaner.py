@@ -38,7 +38,8 @@ def _tqdm(iterator, display, desc=None):
 # TODO: Add tests
 class TextCleaner:
     def __init__(self, word_count_min=1, word_length_min=2, bigram_kwargs={}):
-        self.remove_punctuation_rule = re.compile(f"[{re.escape(string.punctuation)}]")
+        self.punctuation = '–'+string.punctuation
+        self.remove_punctuation_rule = re.compile(f"[{re.escape(self.punctuation)}]")
         self.word_counts = defaultdict(lambda :0)
         self.word_count_min = word_count_min
         self.word_length_min = word_length_min
@@ -67,7 +68,7 @@ class TextCleaner:
         if ('-pron-' in bigram) or ('t' in bigram):
             return False
         for word in bigram:
-            if (word in self.STOPWORDS) or word.isspace() or (word in string.punctuation):
+            if (word in self.STOPWORDS) or word.isspace() or (word in self.punctuation):
                 return False
         acceptable_types = ('JJ', 'JJR', 'JJS', 'NN', 'NNS', 'NNP', 'NNPS')
         second_type = ('NN', 'NNS', 'NNP', 'NNPS')
