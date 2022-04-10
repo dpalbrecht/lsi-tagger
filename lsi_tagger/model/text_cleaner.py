@@ -1,5 +1,4 @@
 import re
-import string
 from gensim.parsing.preprocessing import STOPWORDS
 from collections import defaultdict
 import itertools
@@ -38,7 +37,7 @@ def _tqdm(iterator, display, desc=None):
 # TODO: Add tests
 class TextCleaner:
     def __init__(self, word_count_min=1, word_length_min=2, bigram_kwargs={}):
-        self.punctuation = '–'+string.punctuation
+        self.punctuation = """!"#$%&\'()*+,./:;<=>?@[\\]^_`{|}~"""
         self.remove_punctuation_rule = re.compile(f"[{re.escape(self.punctuation)}]")
         self.word_counts = defaultdict(lambda :0)
         self.word_count_min = word_count_min
