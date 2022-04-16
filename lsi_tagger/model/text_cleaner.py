@@ -37,14 +37,15 @@ def _tqdm(iterator, display, desc=None):
 # TODO: Add tests
 class TextCleaner:
     def __init__(self, word_count_min=1, word_length_min=2, bigram_kwargs={}):
-        self.punctuation = """!"#$%&\'()*+,./:;<=>?@[\\]^_`{|}~"""
+        self.punctuation = """!"$%\'()*+,./:;<=>?@[\\]^_`{|}~"""
         self.remove_punctuation_rule = re.compile(f"[{re.escape(self.punctuation)}]")
         self.word_counts = defaultdict(lambda :0)
         self.word_count_min = word_count_min
         self.word_length_min = word_length_min
         self.bigrams = (len(bigram_kwargs)>0)
-        self.bigrams_pmi_min_value = bigram_kwargs.get('bigrams_pmi_min_value', 1)
-        self.bigrams_min_freq = bigram_kwargs.get('bigrams_min_freq', 20)
+        if self.bigrams:
+            self.bigrams_pmi_min_value = bigram_kwargs.get('bigrams_pmi_min_value', 1)
+            self.bigrams_min_freq = bigram_kwargs.get('bigrams_min_freq', 20)
         keep_stopwords = ['top','bottom','back','front','full','her','him','herself',
                           'himself','his','hers','kg','km','cm','thick','thin','under',
                           'you','your','yours']
@@ -63,11 +64,8 @@ class TextCleaner:
         Returns:
             (bool): True/False whether to keep bigram.
         """
-        # TODO: Is this first step necessary? Is it doing anything?
-        if ('-pron-' in bigram) or ('t' in bigram):
-            return False
         for word in bigram:
-            if (word in self.STOPWORDS) or word.isspace() or (word in self.punctuation):
+            if (word in self.STOPWORDS) or (len(word)<self.word_length_min):
                 return False
         acceptable_types = ('JJ', 'JJR', 'JJS', 'NN', 'NNS', 'NNP', 'NNPS')
         second_type = ('NN', 'NNS', 'NNP', 'NNPS')
@@ -156,6 +154,7 @@ class TextCleaner:
     def _filter_tokens(self, tokens, fit):
         """
         Helper method to filter tokens based on stopwords and word_length_min, and fit word_counts.
+        One step downstream of self._preprocess_text.
         
         Args:
             tokens (list of lists of strings): List of documents split into tokens.
@@ -192,7 +191,7 @@ class TextCleaner:
         Returns:
             (list of lists of strings): Filtered tokens.
         """
-        return [[word for word in ct if (self.word_counts.get(word, 0) > self.word_count_min)] 
+        return [[word for word in ct if (self.word_counts.get(word, 0) >= self.word_count_min)] 
                 for ct in _tqdm(cleaned_tokens, display=fit, desc='Filtering by word count')]
 
     def _clean_documents(self, documents, fit):

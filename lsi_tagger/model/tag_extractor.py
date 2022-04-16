@@ -106,8 +106,8 @@ class TagExtractor:
                 
         # Warn for empty documents
         if len(self.problem_docs) > 0:
-            logger.warning("Warning: Some documents yield no clean tokens. These documents won't have tags. Check self.problem_docs for more detail.")
-            logger.warning(f'Examples: {problem_docs[:5]}')
+            logger.warning("Warning: Some documents yield no clean tokens. These documents won't have tags and are stored in self.problem_docs.")
+            logger.warning(f'Examples: {self.problem_docs[:5]}')
         
         # Train TF-IDF
         logger.info('Training TF-IDF...')
