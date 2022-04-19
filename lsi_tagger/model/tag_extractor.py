@@ -125,6 +125,9 @@ class TagExtractor:
         
         # Save the topic matrix for tag extraction
         self.lsi_topic_matrix = self.lsi_model.get_topics()
+        self.lsi_topic_matrix_T_normed = (
+            self.lsi_topic_matrix.T/np.linalg.norm(self.lsi_topic_matrix.T, axis=1)[:,None]
+        ).T
         
         logger.info('Tag Extractor training is done!')
         
@@ -153,8 +156,60 @@ class TagExtractor:
             corpus_lsi = self.corpus_lsi[doc_ind]
         return corpus_tfidf, corpus_lsi
     
+    def _lsi_corpus2vec(self, lsi_corpus_vec):
+        """
+        Helper method to convert a Gensim LSI representation to a numpy representation.
+        
+        Args:
+            lsi_corpus_vec (list of tuples): Gensim LSI vector.
+            
+        Raises:
+            None
+        
+        Returns:
+            vec (array): Numpy LSI vector.
+        """
+        vec = np.zeros(self.num_lsi_topics)
+        for ind, value in lsi_corpus_vec:
+            vec[ind] = value
+        return vec
+    
+    def _extract_adjacent_tags(self, input_tags, n_adjacent_tags):
+        """
+        Helper method to extract adjacent tags.
+        
+        Args:
+            input_tags (list of strings): Input, reference tags.
+            
+        Raises:
+            None
+            
+        Returns:
+            adjacent_tags (list of strings): Adjacent tags.
+        """
+        bow = self.dictionary.doc2bow(input_tags)
+        bow_vec = self._lsi_corpus2vec(self.lsi_model[self.tfidf[bow]])
+        bow_vec_normed = bow_vec/np.linalg.norm(bow_vec)
+        sims = bow_vec_normed.dot(self.lsi_topic_matrix_T_normed)
+        top_inds = np.argsort(sims)[::-1]
+
+        adjacent_tags = []
+        count = 0
+        for t in top_inds:
+            tag = self.dictionary[t]
+            flag = True
+            for input_tag in input_tags:
+                if (input_tag in tag) or (tag in input_tag):
+                    flag = False
+            if flag:
+                count += 1
+                adjacent_tags.append(tag)
+            if count == n_adjacent_tags:
+                break
+        return adjacent_tags
+    
     def transform(self, input_document, candidate_documents,
-                  n_input_tags=10, n_candidate_tags=5):
+                  n_input_tags=10, n_candidate_tags=5, n_adjacent_tags=10):
         """
         Transforms pairs of input and candidate documents into their respective tag representations.
         
@@ -163,6 +218,7 @@ class TagExtractor:
             candidate_documents (list of strings): Documents of candidate items.
             n_input_tags (int): Maximum number of most common tags to aggregate associated with the input item.
             n_candidate_tags (int): Maximum of tags to extract from each candidate item.
+            n_adjacent_tags (int): Maximum number of adjacent tags to extract, given the input_tags.
             
         Raises:
             None.
@@ -170,6 +226,7 @@ class TagExtractor:
         Returns:
             input_tags (ordered list of tuples): Tuples of tags and number of times extracted from candidate_documents.
             candidate_tags (ordered list of tuples): Tuples of tags and LSI values.
+            adjacent_tags (ordered list of strings): Adjacent tags to input_tags.
         """
         tfidf_input, lsi_input = self._get_vector_representations(input_document)
         if (len(tfidf_input) == 0) | (len(lsi_input) == 0):
@@ -205,8 +262,11 @@ class TagExtractor:
 
         all_candidate_tags = list(itertools.chain(*[list(ct.keys()) for ct in candidate_tags]))
         input_tags = Counter(all_candidate_tags).most_common(n_input_tags)
+        adjacent_tags = []
+        if n_adjacent_tags > 0:
+            adjacent_tags = self._extract_adjacent_tags([t[0] for t in input_tags], n_adjacent_tags)
 
-        return input_tags, candidate_tags
+        return input_tags, candidate_tags, adjacent_tags
         
     def rank(self, candidate_tags, selected_tags):
         """
@@ -223,9 +283,16 @@ class TagExtractor:
         Returns:
             ranking (list of ints): List of indices in which to re-rank candidates.
         """
-        reranking_scores = []
-        for tag_dict in candidate_tags:
+        inds, scores = [], []
+        original_ranking = []
+        for n, tag_dict in enumerate(candidate_tags):
             document_score = sum(tag_dict.get(tag,0) for tag in selected_tags)
-            reranking_scores.append(document_score)
-        ranking = np.argsort(-np.array(reranking_scores)).tolist()
-        return ranking
+            if document_score > 0:
+                scores.append(document_score)
+                inds.append(n)
+            else:
+                original_ranking.append(n)
+        reranking = np.argsort(np.array(scores))[::-1].tolist()
+        new_partial_ranking = np.array(inds)[reranking].tolist()
+        new_ranking = new_partial_ranking + original_ranking
+        return new_ranking
