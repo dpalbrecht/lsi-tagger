@@ -4,7 +4,7 @@ LSI Tagger is a creatively named package that, as one might assume, extracts key
 Compared to other keyword extraction methods, this package does so on a pairwise basis so that keywords/tags for a given document 1) may change given new candidate documents and 2) are much more likely to be able to explain the relationship to its candidates.  
   
 In fewer words, this package's main capabilities are:  
-1) Explain search results and allow for targeted re-ranking: Extract keywords from and input and N candidate documents.
+1) Explain search results and allow for targeted re-ranking: Extract keywords from an input and N candidate documents.
 2) Suggest tweaks to a user's current search based on the trained product documents: Suggest adjacent keywords given extracted input document tags.
   
   
