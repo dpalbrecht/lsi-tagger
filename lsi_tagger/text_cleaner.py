@@ -5,13 +5,6 @@ import itertools
 from tqdm import tqdm
 import nltk
 nltk.download('averaged_perceptron_tagger')
-import logging
-logger = logging.getLogger()
-logging.basicConfig(
-    format='%(asctime)s %(levelname)-8s %(message)s',
-    level=logging.INFO,
-    datefmt='%Y-%m-%d %H:%M:%S'
-)
 
 
 def _tqdm(iterator, display, desc=None):
@@ -34,7 +27,7 @@ def _tqdm(iterator, display, desc=None):
                     leave=True, desc=desc)
     return iterator
 
-# TODO: Add tests
+
 class TextCleaner:
     def __init__(self, word_count_min=1, word_length_min=2, bigram_kwargs={}):
         self.punctuation = """!"$%\'()*+,./:;<=>?@[\\]^_`{|}~"""

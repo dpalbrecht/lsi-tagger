@@ -4,7 +4,6 @@ from collections import Counter
 import itertools
 import pickle
 import logging
-import logging
 logger = logging.getLogger()
 logging.basicConfig(
     format='%(asctime)s %(levelname)-8s %(message)s',
@@ -14,7 +13,6 @@ logging.basicConfig(
 from .text_cleaner import TextCleaner
 
 
-# TODO: Add tests
 class TagExtractor:
     """
     The TagExtractor trains an LSI model and uses it to extract tags and rank candidates.
@@ -23,7 +21,7 @@ class TagExtractor:
         word_count_min (int): The minimum number of times a word has to appear to be kept. Optional, default is 2.
         word_length_min (int): The minimum length a word must be to be kept. Optional, default is 2.
         num_lsi_topics (int): The number of LSI topics to extract during model training. 
-            Optional, default is 300. Optimal values are known to be 100-400.
+            Optional, default is 300. Optimal values are known to be 100-400 but I've had great results up to 1,000.
         bigram_kwargs (dict): Bigram arguments. 
             bigrams_pmi_min_value: The minimum value of Pointwise Mutual Information for a bigram to be kept. 
                 Values above 1 are best. Optional, default is 1.
