@@ -11,5 +11,5 @@ setup(
     packages=find_packages(),
     url='https://github.com/dpalbrecht/lsi-tagger',
     keywords=['nlp','e-commerce','keyword-extraction','latent-semantic-indexing'],
-    install_requires=['numpy','gensim']
+    install_requires=['gensim','numpy','nltk']
 )
