@@ -7,7 +7,7 @@ setup(
     license='MIT',
     author='David Albrecht',
     author_email='davidpabloalbrecht@gmail.com',
-    description='LSI based, pairwise tag extraction intended for e-commerce product descriptions.'
+    description='LSI based, pairwise tag extraction intended for e-commerce product descriptions.',
     packages=find_packages(),
     url='https://github.com/dpalbrecht/lsi-tagger',
     keywords=['nlp','e-commerce','keyword-extraction','latent-semantic-indexing'],

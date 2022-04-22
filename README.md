@@ -17,4 +17,4 @@ Gensim (>= 4.1.2)
 nltk (>= 3.7)  
   
 ### User installation
-`pip install lsi_tagger`
+`pip install lsi-tagger`
