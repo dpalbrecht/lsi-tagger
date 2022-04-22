@@ -8,6 +8,9 @@ In fewer words, this package's main capabilities are:
 2) Suggest tweaks to a user's current search based on the trained corpus: Extract "adjacent" keywords given extracted input tags.
   
   
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1LisuSaLIgAUSgMHWN68F-T1oKpmVQIeA)
+
+  
 ## Installation  
 ### Dependencies  
 lsi-tagger requires:  
