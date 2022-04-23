@@ -228,7 +228,7 @@ class TagExtractor:
         """
         tfidf_input, lsi_input = self._get_vector_representations(input_document)
         if (len(tfidf_input) == 0) | (len(lsi_input) == 0):
-            return [], []
+            return [], [], []
 
         candidate_tags = []
         for candidate_document in candidate_documents:
