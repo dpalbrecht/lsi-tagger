@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='lsi_tagger',
-    version='0.1',
+    version='0.11',
     license='MIT',
     author='David Albrecht',
     author_email='davidpabloalbrecht@gmail.com',
