@@ -42,7 +42,7 @@ class TextCleaner:
         keep_stopwords = ['top','bottom','back','front','full','her','him','herself',
                           'himself','his','hers','kg','km','cm','thick','thin','under',
                           'you','your','yours']
-        self.STOPWORDS = keep_stopwords = [s for s in STOPWORDS if s not in keep_stopwords]
+        self.STOPWORDS = [s for s in STOPWORDS if s not in keep_stopwords]
         
     def _pos_filter(self, bigram):
         """
